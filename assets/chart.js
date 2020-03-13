@@ -61,7 +61,7 @@ $.get(API, function(data) {
         property: 'fill',
         target: polygonSeries.mapPolygons.template,
         min: chart.colors.getIndex(1).brighten(1),
-        max: chart.colors.getIndex(1).brighten(-0.5)
+        max: chart.colors.getIndex(1).brighten(-0.9)
       });
 
       // Make map load polygon data (state shapes and names) from GeoJSON
