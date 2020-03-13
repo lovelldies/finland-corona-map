@@ -3,9 +3,6 @@ var apiResponse = '';
 
 $.get(API, function(data) {
   apiResponse = data;
-
-
-
   $('#totalCount').append(apiResponse.confirmed.length);
 }).done(function() {
   am4core.ready(function() {
