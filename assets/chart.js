@@ -24,6 +24,15 @@ $.get(API, function(data) {
         }))
         .value();
 
+      let tr = '';
+      remappedData.forEach(data => {
+        tr += `<tr>
+          <td>${data.cases.length}</td>
+          <td>${data.healthCareDistrict}</td>
+        </tr>`;
+      });
+      $('#dataTableBody').append(tr);
+
       // var title = 'Coronavirus disease (COVID-19) outbreak in Finland';
       // Create map instance
       var chart = am4core.create('chartdiv', am4maps.MapChart);
