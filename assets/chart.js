@@ -48,13 +48,17 @@ $.get(API, function(data) {
           const id = ev.target.data.features[i].id;
 
           let count = 0;
+          selected = true;
+
           if (_.find(remappedData, { region: {id: id}})) {
             const rx = _.find(remappedData, { region: {id: id}});
             count = rx.cases.length;
+            selected = false;
           }
           data.push({
             id: ev.target.data.features[i].id,
-            value: count
+            value: count,
+            selected: selected
           });
         }
 
@@ -106,6 +110,13 @@ $.get(API, function(data) {
       polygonTemplate.tooltipText = '{name}: {value}';
       polygonTemplate.nonScalingStroke = true;
       polygonTemplate.strokeWidth = 0.5;
+
+      polygonTemplate.adapter.add("fill", function(fill, target) {
+        if (target.dataItem.dataContext && target.dataItem.dataContext.selected) {
+          return am4core.color("#28a745");;
+        }
+        return fill;
+      });
 
       // Create hover state and set alternative fill color
       var hs = polygonTemplate.states.create('hover');
