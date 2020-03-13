@@ -28,7 +28,7 @@
       gtag('js', new Date());
 
       gtag('config', 'UA-41941997-2');
-</script>
+    </script>
 
   </head>
 
@@ -37,15 +37,42 @@
     <main role="main">
       <div class="container-fluid h-100">
         <div class="row h-100">
-          <div class="col-md-4">
+          <div class="col-md-5">
             <h1 class="mt-5">Coronavirus disease (COVID-19) outbreak in Finland</h1>
-            <div class="alert alert-danger" role="alert">
-              <h5 class="m-0"><span id="totalCount"></span> confirmed cases</h5>
-            </div>
             <p class="lead">This is a map visualising the data of the number of confirmed cases of
-                coronavirus disease Covid-19 in Finland. The <a href="https://yle.fi/uutiset/osasto/news/woman_in_helsinki_tests_positive_for_novel_coronavirus/11229433"
-                target="_blank">first case in Finland was reported on Feb 26, 2020</a> and since
-                then the numbers have been rapidly rising.</p>
+              coronavirus disease Covid-19 in Finland. The <a href="https://yle.fi/uutiset/osasto/news/woman_in_helsinki_tests_positive_for_novel_coronavirus/11229433"
+              target="_blank">first case in Finland was reported on Feb 26, 2020</a> and since
+              then the numbers have been rapidly rising.</p>
+
+            <div class="container my-4" id="count-cards">
+              <div class="row">
+                <div class="col-sm">
+                  <div class="card text-white bg-warning mb-3">
+                    <h5 class="card-header">Confirmed</h5>
+                    <div class="card-body">
+                      <h5 class="card-title m-0" id="totalConfirmed" style="font-size: 2rem"></h5>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm">
+                  <div class="card text-white bg-success mb-3">
+                    <h5 class="card-header">Recovered</h5>
+                    <div class="card-body">
+                      <h5 class="card-title m-0" id="totalRecovered" style="font-size: 2rem"></h5>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm">
+                  <div class="card text-white bg-danger mb-3">
+                    <h5 class="card-header">Deaths</h5>
+                    <div class="card-body">
+                      <h5 class="card-title m-0" id="totalDeaths" style="font-size: 2rem"></h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <h5>More resources and links:</h5>
             <ul>
               <li>

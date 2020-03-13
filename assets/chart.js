@@ -3,7 +3,9 @@ var apiResponse = '';
 
 $.get(API, function(data) {
   apiResponse = data;
-  $('#totalCount').append(apiResponse.confirmed.length);
+  $('#totalConfirmed').append(apiResponse.confirmed.length);
+  $('#totalRecovered').append(apiResponse.recovered.length);
+  $('#totalDeaths').append(apiResponse.deaths.length);
 }).done(function() {
   am4core.ready(function() {
     var regionMap = {};
