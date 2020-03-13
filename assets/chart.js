@@ -3,6 +3,10 @@ var apiResponse = '';
 
 $.get(API, function(data) {
   apiResponse = data;
+
+
+
+  $('#totalCount').append(apiResponse.confirmed.length);
 }).done(function() {
   am4core.ready(function() {
     var regionMap = {};
@@ -25,6 +29,7 @@ $.get(API, function(data) {
       // Create map instance
       var chart = am4core.create('chartdiv', am4maps.MapChart);
       // chart.titles.create().text = title;
+      chart.tapToActivate = true;
 
       // Set map definition
       chart.geodataSource.url = 'assets/finlandLow.json';
