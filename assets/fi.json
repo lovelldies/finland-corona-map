@@ -1,0 +1,97 @@
+[
+  {
+    "healthCareDistrict": "Ahvenanmaa",
+    "id": "FI-01",
+    "name": "Åland Islands"
+  },
+  {
+    "healthCareDistrict": "Etelä-Karjala",
+    "id": "FI-02",
+    "name": "South Karelia"
+  },
+  {
+    "healthCareDistrict": "Etelä-Pohjanmaa",
+    "id": "FI-03",
+    "name": "Southern Ostrobothnia"
+  },
+  {
+    "healthCareDistrict": "Etelä-Savo",
+    "id": "FI-04",
+    "name": "Southern Savonia"
+  },
+  {
+    "healthCareDistrict": "Kainuu",
+    "id": "FI-05",
+    "name": "Kainuu"
+  },
+  {
+    "healthCareDistrict": "Kanta-Häme",
+    "id": "FI-06",
+    "name": "Tavastia Proper"
+  },
+  {
+    "healthCareDistrict": "Keski-Pohjanmaa",
+    "id": "FI-07",
+    "name": "Central Ostrobothnia"
+  },
+  {
+    "healthCareDistrict": "Keski-Suomi",
+    "id": "FI-08",
+    "name": "Central Finland"
+  },
+  {
+    "healthCareDistrict": "Kymenlaakso",
+    "id": "FI-09",
+    "name": "Kymenlaakso"
+  },
+  {
+    "healthCareDistrict": "Lappi",
+    "id": "FI-10",
+    "name": "Lapland"
+  },
+  {
+    "healthCareDistrict": "Pirkanmaa",
+    "id": "FI-11",
+    "name": "Pirkanmaa"
+  },
+  {
+    "healthCareDistrict": "Pohjanmaa",
+    "id": "FI-12",
+    "name": "Ostrobothnia"
+  },
+  {
+    "healthCareDistrict": "Pohjois-Karjala",
+    "id": "FI-13",
+    "name": "North Karelia"
+  },
+  {
+    "healthCareDistrict": "Pohjois-Pohjanmaa",
+    "id": "FI-14",
+    "name": "Northern Ostrobothnia"
+  },
+  {
+    "healthCareDistrict": "Pohjois-Savo",
+    "id": "FI-15",
+    "name": "Northern Savonia"
+  },
+  {
+    "healthCareDistrict": "Päijät-Häme",
+    "id": "FI-16",
+    "name": "Päijänne Tavastia"
+  },
+  {
+    "healthCareDistrict": "Satakunta",
+    "id": "FI-17",
+    "name": "Satakunta"
+  },
+  {
+    "healthCareDistrict": "HUS",
+    "id": "FI-18",
+    "name": "Uusimaa"
+  },
+  {
+    "healthCareDistrict": "Varsinais-Suomi",
+    "id": "FI-19",
+    "name": "Southwest Finland"
+  }
+]
