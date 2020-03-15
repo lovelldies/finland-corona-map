@@ -1,6 +1,14 @@
 const API = 'https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData';
 var apiResponse = '';
 
+var yellow = '#ffc107';
+var green = '#28a745';
+var red = '#dc3545';
+
+function timestampToDate(timestamp) {
+  return moment(timestamp).format('YYYY-MM-DD');
+}
+
 $.get(API, function(data) {
   apiResponse = data;
   $('#totalConfirmed').append(apiResponse.confirmed.length);
@@ -13,29 +21,86 @@ $.get(API, function(data) {
     $.getJSON('assets/fi.json', function(data) {
       regionMap = data;
     }).done(function() {
-
       am4core.useTheme(am4themes_animated);
-      const remappedData = _.chain(apiResponse.confirmed)
+
+      apiResponse.confirmed.forEach(item => {
+        item.day = timestampToDate(item.date);
+      });
+      apiResponse.recovered.forEach(item => {
+        item.day = timestampToDate(item.date);
+      });
+
+      const groupedByHealthCareDistrict = _.chain(apiResponse.confirmed)
         .groupBy('healthCareDistrict')
         .map((value, key) => ({
           healthCareDistrict: key,
-          cases: value,
+          infectedCases: value,
           region: _.find(regionMap, ['healthCareDistrict', key])
         }))
         .value();
 
+      const infectedGroupedByDate = _.chain(apiResponse.confirmed)
+        .groupBy('day')
+        .map((value, key) => ({
+          date: key,
+          infectedCases: value,
+        }))
+        .value();
+
+      infectedGroupedByDate.forEach(item => {
+        item.infectedTotal = item.infectedCases.length;
+      });
+
+      let recoveredGroupedByDate = _.chain(apiResponse.recovered)
+        .groupBy('day')
+        .map((value, key) => ({
+          date: key,
+          recoveredCases: value,
+        }))
+        .value();
+
+      recoveredGroupedByDate.forEach(item => {
+        item.recoveredTotal = item.recoveredCases.length;
+      });
+
+      let allGroupsByDate = _(recoveredGroupedByDate)
+          .concat(infectedGroupedByDate)
+          .groupBy('date')
+          .map(_.spread(_.merge))
+          .value();
+
+      allGroupsByDate = _.sortBy(allGroupsByDate, ['date']);
+
+      infectedGroupedByDate.forEach(item => {
+        item.total = item.infectedCases.length;
+        // item[element.healthCareDistrict] = 1;
+
+        const caseItem = _.chain(item.infectedCases)
+        .groupBy('healthCareDistrict')
+        .map((value, key) => ({
+          healthCareDistrict: key,
+          infectedCases: value,
+          region: _.find(regionMap, ['healthCareDistrict', key])
+        }))
+        .value();
+
+        caseItem.forEach(elem => {
+          item[elem.healthCareDistrict] = elem.infectedCases.length;
+        });
+      });
+
       let tr = '';
-      remappedData.forEach(data => {
+      groupedByHealthCareDistrict.forEach(item => {
         tr += `<tr>
-          <td>${data.cases.length}</td>
-          <td>${data.healthCareDistrict}</td>
+          <td>${item.infectedCases.length}</td>
+          <td>${item.healthCareDistrict}</td>
         </tr>`;
       });
       $('#dataTableBody').append(tr);
 
       // var title = 'Coronavirus disease (COVID-19) outbreak in Finland';
       // Create map instance
-      var chart = am4core.create('chartdiv', am4maps.MapChart);
+      var chart = am4core.create('mapDiv', am4maps.MapChart);
       // chart.titles.create().text = title;
       chart.tapToActivate = true;
 
@@ -50,9 +115,9 @@ $.get(API, function(data) {
           let count = 0;
           selected = true;
 
-          if (_.find(remappedData, { region: {id: id}})) {
-            const rx = _.find(remappedData, { region: {id: id}});
-            count = rx.cases.length;
+          if (_.find(groupedByHealthCareDistrict, { region: {id: id}})) {
+            const rx = _.find(groupedByHealthCareDistrict, { region: {id: id}});
+            count = rx.infectedCases.length;
             selected = false;
           }
           data.push({
@@ -111,9 +176,9 @@ $.get(API, function(data) {
       polygonTemplate.nonScalingStroke = true;
       polygonTemplate.strokeWidth = 0.5;
 
-      polygonTemplate.adapter.add("fill", function(fill, target) {
+      polygonTemplate.adapter.add('fill', function(fill, target) {
         if (target.dataItem.dataContext && target.dataItem.dataContext.selected) {
-          return am4core.color("#28a745");;
+          return am4core.color('#28a745');
         }
         return fill;
       });
@@ -121,6 +186,72 @@ $.get(API, function(data) {
       // Create hover state and set alternative fill color
       var hs = polygonTemplate.states.create('hover');
       hs.properties.fill = chart.colors.getIndex(1).brighten(-0.5);
+
+      createStackedBarChart('hcdStackedBarChart', infectedGroupedByDate);
+      createStackedBarChart('allGroupsStackedBarChart', allGroupsByDate);
     });
+
+
+    function createStackedBarChart(id, data) {
+      const stackedBarChart = am4core.create(id, am4charts.XYChart);
+      stackedBarChart.data = data;
+
+      // Create axes
+      var categoryAxis = stackedBarChart.xAxes.push(new am4charts.CategoryAxis());
+      categoryAxis.dataFields.category = 'date';
+      categoryAxis.title.text = 'Date';
+      categoryAxis.renderer.grid.template.location = 0;
+      // categoryAxis.renderer.grid.template.strokeOpacity = 0.25;
+      categoryAxis.renderer.minGridDistance = 20;
+      categoryAxis.renderer.cellStartLocation = 0.1;
+      categoryAxis.renderer.cellEndLocation = 0.9;
+      categoryAxis.renderer.labels.template.horizontalCenter = 'right';
+      categoryAxis.renderer.labels.template.verticalCenter = 'middle';
+      categoryAxis.renderer.labels.template.rotation = 90;
+
+      var valueAxis = stackedBarChart.yAxes.push(new am4charts.ValueAxis());
+      valueAxis.min = 0;
+
+      // Create series
+      function createSeries(field, name, stacked, color) {
+        var series = stackedBarChart.series.push(new am4charts.ColumnSeries());
+        series.dataFields.valueY = field;
+        series.dataFields.categoryX = 'date';
+        series.name = name;
+        series.columns.template.tooltipText = '{name}: [bold]{valueY}[/]';
+        series.stacked = stacked;
+        series.columns.template.width = am4core.percent(95);
+        series.strokeWidth = 0;
+
+        if (color) {
+          series.fill = am4core.color(color);
+        }
+      }
+
+
+      switch (id) {
+        case 'allGroupsStackedBarChart':
+          valueAxis.title.text = 'Number of cases';
+
+          createSeries('infectedTotal', 'Infected', false, yellow);
+          createSeries('recoveredTotal', 'Recovered', false, green);
+          createSeries('deathsTotal', 'Deaths', false, red);
+          break;
+
+        case 'hcdStackedBarChart':
+          valueAxis.title.text = 'Confirmed number of infections';
+
+          regionMap.forEach(element => {
+              const hcd = element.healthCareDistrict;
+              createSeries(hcd, hcd, true);
+            });
+          break;
+        default:
+          break;
+      }
+
+      // Add legend
+      stackedBarChart.legend = new am4charts.Legend();
+    }
   }); // end am4core.ready()
 });

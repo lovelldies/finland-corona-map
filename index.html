@@ -72,20 +72,14 @@
                 </div>
               </div>
             </div>
-
-            <table class="table table-hover table-striped table-sm">
-              <thead>
-                <tr>
-                  <th scope="col">Count</th>
-                  <th scope="col">Healthcare District</th>
-                </tr>
-              </thead>
-              <tbody id="dataTableBody"></tbody>
-            </table>
             <hr>
 
             <h5>More resources and links:</h5>
             <ul>
+              <li>
+                <a href="https://thl.fi/en/web/thlfi-en"
+                    target="_blank">Finnish Institute for Health and Welfare (THL)</a>
+              </li>
               <li>
                 <a href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public"
                     target="_blank">Coronavirus disease (COVID-19) advice for the public</a> (World Health Organization)
@@ -98,15 +92,38 @@
                 <a href="https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_Finland"
                     target="_blank">2020 coronavirus pandemic in Finland</a> (Wikipedia)
               </li>
-              <li>
-                <em>More links (English &amp; Finnish) shall be added soon</em>
-              </li>
             </ul>
           </div>
-          <div class="col border-left">
-            <div id="chartdiv" class="my-4"></div>
+          <div class="col border-dark border-left">
+            <div id="mapDiv" class="my-4"></div>
           </div>
         </div>
+
+        <div class="row border-dark border-top">
+          <div class="col my-3">
+            <h4>Infections, recoveries &amp; deaths by day</h4>
+            <div id="allGroupsStackedBarChart" class="my-4"></div>
+          </div>
+        </div>
+
+        <div class="row border-dark border-top py-3">
+          <div class="col-md-3">
+            <table class="table table-hover table-striped table-sm my-2">
+              <thead>
+                <tr>
+                  <th scope="col">Count</th>
+                  <th scope="col">Healthcare District</th>
+                </tr>
+              </thead>
+              <tbody id="dataTableBody"></tbody>
+            </table>
+          </div>
+          <div class="col">
+            <h4 class="float-right">Confirmed number of infections by Healthcare district</h4>
+            <div id="hcdStackedBarChart" class="my-4"></div>
+          </div>
+        </div>
+
       </div>
     </main>
 
@@ -127,7 +144,12 @@
         integrity="sha256-VeNaFBVDhoX3H+gJ37DpT/nTuZTdjYro9yBruHjVmoQ="
         crossorigin="anonymous"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"
+        integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ="
+        crossorigin="anonymous"></script>
+
     <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
     <script src="https://www.amcharts.com/lib/4/maps.js"></script>
     <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
 
