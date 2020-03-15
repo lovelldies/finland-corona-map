@@ -1,9 +1,14 @@
 const API = 'https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData';
 var apiResponse = '';
+var maxCount = 0;
 
-var yellow = '#ffc107';
-var green = '#28a745';
-var red = '#dc3545';
+var colors = {
+  'critical': '#ca0101',
+  'bad': '#e17a2d',
+  'medium': '#e1d92d',
+  'good': '#5dbe24',
+  'excellent': '#0b7d03'
+};
 
 function timestampToDate(timestamp) {
   return moment(timestamp).format('YYYY-MM-DD');
@@ -103,6 +108,22 @@ $.get(API, function(data) {
       var chart = am4core.create('mapDiv', am4maps.MapChart);
       // chart.titles.create().text = title;
       chart.tapToActivate = true;
+      chart.chartContainer.wheelable = false;
+
+      // var button = chart.chartContainer.createChild(am4core.Button);
+      // button.label.text = "home";
+      // button.padding(5, 5, 5, 5);
+      // button.width = 20;
+      // button.align = "right";
+      // button.marginRight = 15;
+      // button.events.on("hit", function() {
+      //   chart.goHome();
+      // });
+
+
+      // chart.seriesContainer.draggable = false;
+      // chart.seriesContainer.resizable = false;
+      // chart.maxZoomLevel = 1;
 
       // Set map definition
       chart.geodataSource.url = 'assets/finlandLow.json';
@@ -113,21 +134,101 @@ $.get(API, function(data) {
           const id = ev.target.data.features[i].id;
 
           let count = 0;
+          let percentage = 0;
           selected = true;
 
           if (_.find(groupedByHealthCareDistrict, { region: {id: id}})) {
             const rx = _.find(groupedByHealthCareDistrict, { region: {id: id}});
             count = rx.infectedCases.length;
             selected = false;
+            percentage = (count/apiResponse.confirmed.length) * 100;
+
+            if (rx.region.geo) {
+              latitude = rx.region.geo.lat;
+              longitude = rx.region.geo.long
+            } else {
+              latitude = null;
+              longitude = null;
+            }
+
+            data.push({
+              id: ev.target.data.features[i].id,
+              count: count,
+              selected: selected,
+              latitude: latitude,
+              longitude: longitude,
+              percentage: percentage
+            });
+          } else {
+            data.push({
+              id: ev.target.data.features[i].id,
+              count: count,
+              value: count,
+              selected: selected,
+              // latitude: latitude,
+              // longitude: latitude,
+              percentage: percentage
+            });
           }
-          data.push({
-            id: ev.target.data.features[i].id,
-            value: count,
-            selected: selected
-          });
+
+
         }
 
+        var maxCount = _.maxBy(data, 'count').count;
+
+        data.forEach(item => {
+          // let val = (item.count/maxCount) * 100;
+          let val = item.count;
+
+          if (val >= 100) {
+            item.color = 'critical';
+          }
+           if (100 > val && val >= 25) {
+            item.color = 'bad';
+          }
+           if (25 > val && val >= 10) {
+            item.color = 'medium';
+          }
+           if (10 > val && val >= 1) {
+            item.color = 'good';
+          }
+           if (1 > val) {
+            item.color = 'excellent';
+          }
+        });
+
         polygonSeries.data = data;
+
+        // Create image series
+        var imageSeries = chart.series.push(new am4maps.MapImageSeries());
+
+        // Create a circle image in image series template so it gets replicated to all new images
+        var imageSeriesTemplate = imageSeries.mapImages.template;
+        var circle = imageSeriesTemplate.createChild(am4core.Circle);
+        circle.radius = 15;
+        circle.fill = am4core.color("#000");
+        circle.fillOpacity = 0.7
+        circle.stroke = am4core.color("#fff");
+        circle.strokeWidth = 2;
+        circle.nonScaling = true;
+
+        var label = imageSeriesTemplate.createChild(am4core.Label);
+        label.text = "{count}";
+        label.fill = am4core.color("#fff");
+        label.zIndex = 1;
+        label.fontSize = 11;
+        label.interactionsEnabled = false;
+        label.x = am4core.percent(50);
+        label.horizontalCenter = "middle";
+        label.y = am4core.percent(50);
+        label.verticalCenter = "middle";
+
+        // Add data for the three cities
+        imageSeries.data = polygonSeries.data;
+
+        // Set property fields
+        imageSeriesTemplate.propertyFields.latitude = "latitude";
+        imageSeriesTemplate.propertyFields.longitude = "longitude";
       })
 
       // Set projection
@@ -135,57 +236,40 @@ $.get(API, function(data) {
 
       // Create map polygon series
       var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+      // polygonSeries.calculateVisualCenter = true;
 
       //Set min/max fill color for each area
       polygonSeries.heatRules.push({
         property: 'fill',
         target: polygonSeries.mapPolygons.template,
-        min: chart.colors.getIndex(1).brighten(1),
-        max: chart.colors.getIndex(1).brighten(-0.9)
+
       });
 
       // Make map load polygon data (state shapes and names) from GeoJSON
       polygonSeries.useGeodata = true;
 
-      // Set up heat legend
-      let heatLegend = chart.createChild(am4maps.HeatLegend);
-      heatLegend.series = polygonSeries;
-      heatLegend.align = 'right';
-      heatLegend.width = am4core.percent(25);
-      heatLegend.marginRight = am4core.percent(4);
-      heatLegend.minValue = 0;
-      heatLegend.maxValue = 40000000;
-      heatLegend.valign = 'bottom';
-
-      // Set up custom heat map legend labels using axis ranges
-      var minRange = heatLegend.valueAxis.axisRanges.create();
-      minRange.value = heatLegend.minValue;
-      minRange.label.text = 'Low';
-      var maxRange = heatLegend.valueAxis.axisRanges.create();
-      maxRange.value = heatLegend.maxValue;
-      maxRange.label.text = 'High';
-
-      // Blank out internal heat legend value axis labels
-      heatLegend.valueAxis.renderer.labels.template.adapter.add('text', function(labelText) {
-        return '';
-      });
-
       // Configure series tooltip
       var polygonTemplate = polygonSeries.mapPolygons.template;
-      polygonTemplate.tooltipText = '{name}: {value}';
+      polygonTemplate.tooltipText = '{name}: {count}';
       polygonTemplate.nonScalingStroke = true;
       polygonTemplate.strokeWidth = 0.5;
+      // polygonTemplate.fill = am4core.color('{color}');
+
 
       polygonTemplate.adapter.add('fill', function(fill, target) {
         if (target.dataItem.dataContext && target.dataItem.dataContext.selected) {
-          return am4core.color('#28a745');
+          return am4core.color(colors.excellent);
         }
+        if (target.dataItem.dataContext) {
+          return am4core.color(colors[target.dataItem.dataContext.color]);
+        }
+
         return fill;
       });
 
-      // Create hover state and set alternative fill color
-      var hs = polygonTemplate.states.create('hover');
-      hs.properties.fill = chart.colors.getIndex(1).brighten(-0.5);
+      // // Create hover state and set alternative fill color
+      // var hs = polygonTemplate.states.create('hover');
+      // hs.properties.fill = chart.colors.getIndex(1).brighten(-0.5);
 
       createStackedBarChart('hcdStackedBarChart', infectedGroupedByDate);
       createStackedBarChart('allGroupsStackedBarChart', allGroupsByDate);
@@ -233,9 +317,9 @@ $.get(API, function(data) {
         case 'allGroupsStackedBarChart':
           valueAxis.title.text = 'Number of cases';
 
-          createSeries('infectedTotal', 'Infected', false, yellow);
-          createSeries('recoveredTotal', 'Recovered', false, green);
-          createSeries('deathsTotal', 'Deaths', false, red);
+          createSeries('infectedTotal', 'Infected', false, colors.medium);
+          createSeries('recoveredTotal', 'Recovered', false, colors.good);
+          createSeries('deathsTotal', 'Deaths', false, colors.critical);
           break;
 
         case 'hcdStackedBarChart':
