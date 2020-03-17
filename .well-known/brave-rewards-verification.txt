@@ -1,0 +1,4 @@
+This is a Brave Rewards publisher verification file.
+
+Domain: finland-coronavirus-map.netlify.com
+Token: 2ee475aba7f1f05473e85e8039cde62e99587cb825255376e044c95ce2e9567a
