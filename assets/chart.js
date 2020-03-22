@@ -34,6 +34,9 @@ $.get(API, function(data) {
       apiResponse.recovered.forEach(item => {
         item.day = timestampToDate(item.date);
       });
+      apiResponse.deaths.forEach(item => {
+        item.day = timestampToDate(item.date);
+      });
 
       const groupedByHealthCareDistrict = _.chain(apiResponse.confirmed)
         .groupBy('healthCareDistrict')
@@ -68,8 +71,21 @@ $.get(API, function(data) {
         item.recoveredTotal = item.recoveredCases.length;
       });
 
+      let deathsGroupedByDate = _.chain(apiResponse.deaths)
+        .groupBy('day')
+        .map((value, key) => ({
+          date: key,
+          deathsCases: value,
+        }))
+        .value();
+
+        deathsGroupedByDate.forEach(item => {
+        item.deathsTotal = item.deathsCases.length;
+      });
+
       let allGroupsByDate = _(recoveredGroupedByDate)
           .concat(infectedGroupedByDate)
+          .concat(deathsGroupedByDate)
           .groupBy('date')
           .map(_.spread(_.merge))
           .value();
