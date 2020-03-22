@@ -169,5 +169,14 @@
       "lat": 60.3628,
       "long": 22.4439
     }
+  },
+  {
+    "healthCareDistrict": "Länsi-Pohja",
+    "id": "FI-20",
+    "name": "Länsi-Pohja",
+    "geo": {
+      "lat": 65.7340,
+      "long": 24.5558
+    }
   }
 ]
