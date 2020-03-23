@@ -28,17 +28,37 @@ $.get(API, function(data) {
     }).done(function() {
       am4core.useTheme(am4themes_animated);
 
-      apiResponse.confirmed.forEach(item => {
-        item.day = timestampToDate(item.date);
-      });
-      apiResponse.recovered.forEach(item => {
-        item.day = timestampToDate(item.date);
-      });
-      apiResponse.deaths.forEach(item => {
-        item.day = timestampToDate(item.date);
+      // HDC = Healthcare District.
+      let allCasesGroupedByHCD = {
+        confirmed: [], // These are the infected cases.
+        deaths: [],
+        recovered: []
+      };
+
+      /**
+       * There are three keys: confirmed, recovered & deaths.
+       * For each of these we need the date in the YYYY-MM-DD format
+      */
+      Object.keys(apiResponse).forEach(key => {
+        apiResponse[key].forEach(item => {
+          if (!item.healthCareDistrict) {
+            item.healthCareDistrict = 'Not specified';
+          }
+
+          item.day = timestampToDate(item.date);
+        });
+
+        allCasesGroupedByHCD[key] = _.chain(apiResponse[key])
+          .groupBy('healthCareDistrict')
+          .map((value, key) => ({
+            healthCareDistrict: key,
+            cases: value,
+            region: _.find(regionMap, ['healthCareDistrict', key])
+          }))
+          .value();
       });
 
-      const groupedByHealthCareDistrict = _.chain(apiResponse.confirmed)
+      const confirmedGroupedByHealthCareDistrict = _.chain(apiResponse.confirmed)
         .groupBy('healthCareDistrict')
         .map((value, key) => ({
           healthCareDistrict: key,
@@ -46,6 +66,32 @@ $.get(API, function(data) {
           region: _.find(regionMap, ['healthCareDistrict', key])
         }))
         .value();
+
+      const recoveredGroupedByHealthCareDistrict = _.chain(apiResponse.recovered)
+        .groupBy('healthCareDistrict')
+        .map((value, key) => ({
+          healthCareDistrict: key,
+          recoveredCases: value,
+          region: _.find(regionMap, ['healthCareDistrict', key])
+        }))
+        .value();
+
+      const deathsGroupedByHealthCareDistrict = _.chain(apiResponse.deaths)
+        .groupBy('healthCareDistrict')
+        .map((value, key) => ({
+          healthCareDistrict: key,
+          deathsCases: value,
+          region: _.find(regionMap, ['healthCareDistrict', key])
+        }))
+        .value();
+
+      let allGroupedByHealthCareDistrict = _.values(_.merge(
+        _.keyBy(confirmedGroupedByHealthCareDistrict, 'healthCareDistrict'),
+        _.keyBy(recoveredGroupedByHealthCareDistrict, 'healthCareDistrict'),
+        _.keyBy(deathsGroupedByHealthCareDistrict, 'healthCareDistrict')
+      ));
+
+      allGroupedByHealthCareDistrict = _.orderBy(allGroupedByHealthCareDistrict, 'healthCareDistrict' , 'asc');
 
       const infectedGroupedByDate = _.chain(apiResponse.confirmed)
         .groupBy('day')
@@ -111,9 +157,14 @@ $.get(API, function(data) {
       });
 
       let tr = '';
-      groupedByHealthCareDistrict.forEach(item => {
+      allGroupedByHealthCareDistrict.forEach(item => {
+        if (!item.recoveredCases) { item.recoveredCases = []; }
+        if (!item.deathsCases) { item.deathsCases = []; }
+
         tr += `<tr>
           <td>${item.infectedCases.length}</td>
+          <td>${item.recoveredCases.length}</td>
+          <td>${item.deathsCases.length}</td>
           <td>${item.healthCareDistrict}</td>
         </tr>`;
       });
@@ -153,8 +204,8 @@ $.get(API, function(data) {
           let percentage = 0;
           selected = true;
 
-          if (_.find(groupedByHealthCareDistrict, { region: {id: id}})) {
-            const rx = _.find(groupedByHealthCareDistrict, { region: {id: id}});
+          if (_.find(confirmedGroupedByHealthCareDistrict, { region: {id: id}})) {
+            const rx = _.find(confirmedGroupedByHealthCareDistrict, { region: {id: id}});
             count = rx.infectedCases.length;
             selected = false;
             percentage = (count/apiResponse.confirmed.length) * 100;
