@@ -1,4 +1,5 @@
 const API = 'https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData';
+// const API = 'delete/finnishCoronaData.json';
 var apiResponse = '';
 var maxCount = 0;
 
@@ -178,12 +179,12 @@ $.get(API, function(data) {
       chart.chartContainer.wheelable = false;
 
       // var button = chart.chartContainer.createChild(am4core.Button);
-      // button.label.text = "home";
+      // button.label.text = 'home';
       // button.padding(5, 5, 5, 5);
       // button.width = 20;
-      // button.align = "right";
+      // button.align = 'right';
       // button.marginRight = 15;
-      // button.events.on("hit", function() {
+      // button.events.on('hit', function() {
       //   chart.goHome();
       // });
 
@@ -201,12 +202,18 @@ $.get(API, function(data) {
           const id = ev.target.data.features[i].id;
 
           let count = 0;
+          let recoveredCount = 0;
+          let deathsCount = 0;
+
           let percentage = 0;
           selected = true;
 
           if (_.find(confirmedGroupedByHealthCareDistrict, { region: {id: id}})) {
             const rx = _.find(confirmedGroupedByHealthCareDistrict, { region: {id: id}});
             count = rx.infectedCases.length;
+            recoveredCount = rx.recoveredCases.length;
+            deathsCount = rx.deathsCases.length;
+
             selected = false;
             percentage = (count/apiResponse.confirmed.length) * 100;
 
@@ -221,6 +228,8 @@ $.get(API, function(data) {
             data.push({
               id: ev.target.data.features[i].id,
               count: count,
+              recoveredCount: recoveredCount,
+              deathsCount: deathsCount,
               selected: selected,
               latitude: latitude,
               longitude: longitude,
@@ -230,6 +239,8 @@ $.get(API, function(data) {
             data.push({
               id: ev.target.data.features[i].id,
               count: count,
+              recoveredCount: recoveredCount,
+              deathsCount: deathsCount,
               value: count,
               selected: selected,
               // latitude: latitude,
@@ -262,6 +273,8 @@ $.get(API, function(data) {
            if (1 > val) {
             item.color = 'excellent';
           }
+
+          // item.cases = _.find(allGroupedByHealthCareDistrict, ['region.id', item.id]);
         });
 
         polygonSeries.data = data;
@@ -273,29 +286,50 @@ $.get(API, function(data) {
         var imageSeriesTemplate = imageSeries.mapImages.template;
         var circle = imageSeriesTemplate.createChild(am4core.Circle);
         circle.radius = 15;
-        circle.fill = am4core.color("#000");
-        circle.fillOpacity = 0.7
-        circle.stroke = am4core.color("#fff");
+        circle.fill = am4core.color('#fff');
+        circle.fillOpacity = 0.3;
+        circle.stroke = am4core.color('#000');
         circle.strokeWidth = 2;
         circle.nonScaling = true;
+        // circle.tooltipText = '{name}\n[bold]{count}[/]';
+        // circle.alwaysShowTooltip = true;
+        // circle.tooltipText = '{name}\n Infected: [bold]{count}[/]';
+        // circle.showTooltipOn = 'always';
+        circle.tooltipHTML = `<center><strong>{name}</strong></center>
+          <br>
+          <table>
+          <tr>
+            <td align="left">Infected</td>
+            <th class="pl-2 text-warning">{count}</td>
+          </tr>
+          <tr>
+            <td align="left">Recovered</td>
+            <th class="pl-2 text-success">{recoveredCount}</th>
+          </tr>
+          <tr>
+            <td align="left">Deaths</td>
+            <th class="pl-2 text-danger">{deathsCount}</th>
+          </tr>
+          </table>`;
+
 
         var label = imageSeriesTemplate.createChild(am4core.Label);
-        label.text = "{count}";
-        label.fill = am4core.color("#fff");
+        label.text = '{count}';
+        label.fill = am4core.color('#000');
         label.zIndex = 1;
         label.fontSize = 11;
         label.interactionsEnabled = false;
         label.x = am4core.percent(50);
-        label.horizontalCenter = "middle";
+        label.horizontalCenter = 'middle';
         label.y = am4core.percent(50);
-        label.verticalCenter = "middle";
+        label.verticalCenter = 'middle';
 
         // Add data for the three cities
         imageSeries.data = polygonSeries.data;
 
         // Set property fields
-        imageSeriesTemplate.propertyFields.latitude = "latitude";
-        imageSeriesTemplate.propertyFields.longitude = "longitude";
+        imageSeriesTemplate.propertyFields.latitude = 'latitude';
+        imageSeriesTemplate.propertyFields.longitude = 'longitude';
       })
 
       // Set projection
@@ -309,7 +343,6 @@ $.get(API, function(data) {
       polygonSeries.heatRules.push({
         property: 'fill',
         target: polygonSeries.mapPolygons.template,
-
       });
 
       // Make map load polygon data (state shapes and names) from GeoJSON
@@ -317,9 +350,9 @@ $.get(API, function(data) {
 
       // Configure series tooltip
       var polygonTemplate = polygonSeries.mapPolygons.template;
-      polygonTemplate.tooltipText = '{name}: {count}';
-      polygonTemplate.nonScalingStroke = true;
-      polygonTemplate.strokeWidth = 0.5;
+      // polygonTemplate.tooltipText = '{name}: {count}';
+      // polygonTemplate.nonScalingStroke = true;
+      // polygonTemplate.strokeWidth = 0.5;
       // polygonTemplate.fill = am4core.color('{color}');
 
 
