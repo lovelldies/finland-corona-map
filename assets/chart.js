@@ -1,4 +1,4 @@
-const API = 'https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData';
+const API = 'https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData/v2';
 // const API = 'delete/finnishCoronaData.json';
 var apiResponse = '';
 var maxCount = 0;
