@@ -159,6 +159,7 @@ $.get(API, function(data) {
 
       let tr = '';
       allGroupedByHealthCareDistrict.forEach(item => {
+        if (!item.infectedCases) { item.infectedCases = []; }
         if (!item.recoveredCases) { item.recoveredCases = []; }
         if (!item.deathsCases) { item.deathsCases = []; }
 
