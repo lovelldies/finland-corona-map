@@ -447,6 +447,8 @@ $.get(casesAPI, function(data) {
           if (color) {
             series.fill = am4core.color(color);
           }
+
+          return series;
         }
 
 
@@ -462,10 +464,24 @@ $.get(casesAPI, function(data) {
           case 'hcdStackedBarChart':
             valueAxis.title.text = 'Confirmed number of infections';
 
-            regionMap.forEach(element => {
-                const hcd = element.healthCareDistrict;
-                createSeries(hcd, hcd, true);
+            var series = [];
+            regionMap.forEach((element, i) => {
+              const hcd = element.healthCareDistrict;
+              series[i] = createSeries(hcd, hcd, true);
+            });
+
+            var toggleSeries = createSeries('void', 'Toggle All');
+
+            toggleSeries.events.on('hidden', function() {
+              series.forEach(s => {
+                s.hide();
               });
+            });
+            toggleSeries.events.on('shown', function() {
+              series.forEach(s => {
+                s.show();
+              });
+            });
             break;
           default:
             break;
